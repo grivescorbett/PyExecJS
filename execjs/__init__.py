@@ -275,8 +275,9 @@ class ExternalRuntime:
             if not self._runtime._raw_result:
                 output = output.decode(self._runtime._encoding)
                 output = output.replace("\r\n", "\n").replace("\r", "\n")
-            
-            return self._extract_result(output.split("\n")[-2])
+                output = self._extract_result(output.split("\n")[-2])
+                
+            return output
 
         def call(self, identifier, *args):
             args = json.dumps(args)
