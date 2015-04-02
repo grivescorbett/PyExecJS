@@ -451,6 +451,34 @@ for command in ["nodejs", "node"]:
     if runtime.is_available():
         break
 
+for command in ["nodejs", "node"]:
+    _runtimes["NodeAsync"] = runtime = ExternalRuntime(
+        name="Node.js Async (V8)", 
+        command=[command], 
+        runner_source=r"""(function(program, execJS, module, exports, require) { execJS(program) })(function(callback) { #{source}
+        }, function(program) {
+          var output, print = function(string) {
+            process.stdout.write('' + string + '\n');
+          };
+          try {
+            program(function(result){
+              if (typeof result == 'undefined' && result !== null) {
+                print('["ok"]');
+              } else {
+                try {
+                  print(JSON.stringify(['ok', result]));
+                } catch (err) {
+                  print('["err"]');
+                }
+              } 
+            });
+          } catch (err) {
+            print(JSON.stringify(['err', '' + err]));
+          }
+        });""",
+        )
+    if runtime.is_available():
+        break
 
 _runtimes['JavaScriptCore'] = ExternalRuntime(
     name="JavaScriptCore",
@@ -572,3 +600,37 @@ for _name, _command in [
 });
 phantom.exit();
 """)
+
+for _name, _command in [
+    ['PhantomJSAsync', 'phantomjs'],
+    ['SlimerJSAsync', 'slimerjs'],
+]:
+    _runtimes[_name] = runtime = ExternalRuntime(
+        name=_name,
+        command=[_command],
+        runner_source=r"""(function(program, execJS, module, exports, require) { execJS(program) })(function(callback) { #{source}
+        }, function(program) {
+          var output, print = function(string) {
+            console.log('' + string);
+          };
+          try {
+            program(function(result){
+              if (typeof result == 'undefined' && result !== null) {
+                print('["ok"]');
+              } else {
+                try {
+                  print(JSON.stringify(['ok', result]));
+                } catch (err) {
+                  print('["err"]');
+                }
+              }
+               phantom.exit();
+            });
+          } catch (err) {
+            print(JSON.stringify(['err', '' + err]));
+            phantom.exit();
+          }
+        });""",
+        )
+    if runtime.is_available():
+        break
