@@ -182,22 +182,15 @@ def _which(command):
 
 
 class ExternalRuntime:
-<<<<<<< HEAD
-    def __init__(self, name, command, runner_source, encoding='utf8', raw_result=False):
-=======
-    def __init__(self, name, command, runner_source, encoding='utf8', args_json_encoder=None):
->>>>>>> 8a6dd7228432eaaa16d4bfc6df50cd25da0b7739
+    def __init__(self, name, command, runner_source, encoding='utf8', raw_result=False, args_json_encoder=None):
         self._name = name
         if isinstance(command, str):
             command = [command]
         self._command = command
         self._runner_source = runner_source
         self._encoding = encoding
-<<<<<<< HEAD
         self._raw_result = raw_result
-=======
         self._args_json_encoder = args_json_encoder
->>>>>>> 8a6dd7228432eaaa16d4bfc6df50cd25da0b7739
 
     def __str__(self):
         return "{class_name}({runtime_name})".format(
