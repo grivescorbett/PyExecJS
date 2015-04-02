@@ -182,14 +182,22 @@ def _which(command):
 
 
 class ExternalRuntime:
+<<<<<<< HEAD
     def __init__(self, name, command, runner_source, encoding='utf8', raw_result=False):
+=======
+    def __init__(self, name, command, runner_source, encoding='utf8', args_json_encoder=None):
+>>>>>>> 8a6dd7228432eaaa16d4bfc6df50cd25da0b7739
         self._name = name
         if isinstance(command, str):
             command = [command]
         self._command = command
         self._runner_source = runner_source
         self._encoding = encoding
+<<<<<<< HEAD
         self._raw_result = raw_result
+=======
+        self._args_json_encoder = args_json_encoder
+>>>>>>> 8a6dd7228432eaaa16d4bfc6df50cd25da0b7739
 
     def __str__(self):
         return "{class_name}({runtime_name})".format(
@@ -204,17 +212,17 @@ class ExternalRuntime:
     def exec_(self, source):
         if not self.is_available():
             raise RuntimeUnavailable()
-        return self.Context(self).exec_(source)
+        return self.Context(self, args_json_encoder=self._args_json_encoder).exec_(source)
 
     def eval(self, source):
         if not self.is_available():
             raise RuntimeUnavailable()
-        return self.Context(self).eval(source)
+        return self.Context(self, args_json_encoder=self._args_json_encoder).eval(source)
 
     def compile(self, source):
         if not self.is_available():
             raise RuntimeUnavailable()
-        return self.Context(self, source)
+        return self.Context(self, source, args_json_encoder=self._args_json_encoder)
 
     def is_available(self):
         return self._binary() is not None
@@ -246,9 +254,10 @@ class ExternalRuntime:
             raise RuntimeError(stdoutdata)
 
     class Context:
-        def __init__(self, runtime, source=''):
+        def __init__(self, runtime, source='', args_json_encoder=None):
             self._runtime = runtime
             self._source = source
+            self._args_json_encoder = args_json_encoder() if args_json_encoder else None
 
         def eval(self, source):
             if not source.strip():
@@ -280,7 +289,11 @@ class ExternalRuntime:
             return output
 
         def call(self, identifier, *args):
-            args = json.dumps(args)
+            if self._args_json_encoder:
+                args = self._args_json_encoder.encode(args)
+            else:
+                args = json.dumps(args)
+
             return self.eval("{identifier}.apply(this, {args})".format(identifier=identifier, args=args))
 
         def _compile(self, source):
