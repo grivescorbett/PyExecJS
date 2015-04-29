@@ -485,6 +485,7 @@ for command in ["nodejs", "node"]:
           } catch (err) {
             print(JSON.stringify(['err', '' + err]));
           }
+          process.exit();
         });""",
         )
     if runtime.is_available():
