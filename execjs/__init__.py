@@ -31,6 +31,7 @@ import platform
 import tempfile
 from subprocess import Popen, PIPE, STDOUT
 import json
+import tempfile
 
 try:
     from collections import OrderedDict
@@ -233,12 +234,17 @@ class ExternalRuntime:
         """protected"""
         cmd = self._binary() + [filename]
 
+        f = tempfile.NamedTemporaryFile(bufsize=0)
         p = None
         try:
-            p = Popen(cmd, stdout=PIPE, stderr=STDOUT)
-            stdoutdata, stderrdata = p.communicate()
+            p = Popen(cmd, stdout=f)
             ret = p.wait()
         finally:
+            f.flush()
+            f.seek(0)
+            stdoutdata = f.read()
+            f.close()
+            os.unlink(f.name)
             del p
 
         if ret == 0:
@@ -278,7 +284,7 @@ class ExternalRuntime:
                 output = output.decode(self._runtime._encoding)
                 output = output.replace("\r\n", "\n").replace("\r", "\n")
                 output = self._extract_result(output.split("\n")[-2])
-                
+
             return output
 
         def call(self, identifier, *args):
@@ -463,8 +469,8 @@ for command in ["nodejs", "node"]:
 
 for command in ["nodejs", "node"]:
     _runtimes["NodeAsync"] = runtime = ExternalRuntime(
-        name="Node.js Async (V8)", 
-        command=[command], 
+        name="Node.js Async (V8)",
+        command=[command],
         runner_source=r"""(function(program, execJS, module, exports, require) { execJS(program) })(function(callback) { #{source}
         }, function(program) {
           var output, print = function(string) {
@@ -480,7 +486,7 @@ for command in ["nodejs", "node"]:
                 } catch (err) {
                   print('["err"]');
                 }
-              } 
+              }
             });
           } catch (err) {
             print(JSON.stringify(['err', '' + err]));
