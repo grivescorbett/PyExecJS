@@ -244,7 +244,6 @@ class ExternalRuntime:
             f.seek(0)
             stdoutdata = f.read()
             f.close()
-            os.unlink(f.name)
             del p
 
         if ret == 0:
